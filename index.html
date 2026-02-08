@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Stundenzettel">
+    <title>Stundenzettel - Baustellenerfassung</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+            width: auto;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .time-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 0.8fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .baustelle-entry {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .baustelle-entry input {
+            margin-bottom: 10px;
+        }
+
+        .remove-btn {
+            background: #f5576c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .notification-status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .notification-enabled {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .notification-disabled {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .sync-status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .sync-enabled {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .sync-local {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+
+        .total-hours-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .total-label {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .total-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 10px;
+        }
+
+        .total-status {
+            font-size: 14px;
+            display: block;
+            margin-top: 8px;
+            opacity: 0.9;
+        }
+
+        .total-hours-display.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .total-hours-display.success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .entries-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .entry-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .entry-date {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .entry-details {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .badge-driver {
+            background: #667eea;
+            color: white;
+        }
+
+        .badge-no-break {
+            background: #f5576c;
+            color: white;
+        }
+
+        .badge-urlaub {
+            background: #4facfe;
+            color: white;
+        }
+
+        .badge-feiertag {
+            background: #feca57;
+            color: #333;
+        }
+
+        .badge-krank {
+            background: #ee5a6f;
+            color: white;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 5px;
+            background: #f0f0f0;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .view-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f5f5f5;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .calendar-day.has-entry {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-color: #4facfe;
+            color: white;
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .calendar-day.other-month:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .calendar-day-number {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .calendar-day-hours {
+            font-size: 11px;
+            margin-top: 4px;
+            opacity: 0.9;
+        }
+
+        .calendar-legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        @media (max-width: 600px) {
+            .calendar-grid {
+                gap: 4px;
+            }
+            
+            .calendar-day-number {
+                font-size: 14px;
+            }
+            
+            .calendar-day-hours {
+                font-size: 9px;
+            }
+        }
+
+        .delete-entry {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .edit-entry {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 12px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .add-more-btn {
+            background: transparent;
+            border: 2px dashed #667eea;
+            color: #667eea;
+            margin-top: 10px;
+        }
+
+        .add-more-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        @media (max-width: 600px) {
+            .time-row {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .month-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .month-selector select {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏱️ Stundenzettel</h1>
+            <p class="subtitle">Baustellenerfassung - Dominik Assemann</p>
+        </div>
+
+        <div id="notificationStatus" class="notification-status notification-disabled">
+            📱 Benachrichtigungen deaktiviert - Klicke unten auf "Benachrichtigungen aktivieren"
+        </div>
+
+        <div id="syncInfo" class="sync-status sync-local">
+            💾 Lade Daten...
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('entry')">📝 Eintrag</button>
+            <button class="nav-tab" onclick="switchTab('overview')">📊 Übersicht</button>
+            <button class="nav-tab" onclick="switchTab('export')">📤 Export</button>
+        </div>
+
+        <!-- Eintrag Tab -->
+        <div id="entryTab" class="tab-content active">
+            <div class="card">
+                <h2 style="margin-bottom: 20px;">Neuer Eintrag</h2>
+                
+                <div id="totalHoursDisplay" class="total-hours-display">
+                    <span class="total-label">Tages-Summe:</span>
+                    <span class="total-value" id="totalHoursValue">0,00 h</span>
+                    <span class="total-status" id="totalHoursStatus"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label>📅 Datum</label>
+                    <input type="date" id="entryDate" />
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="wasDriver" />
+                    <label for="wasDriver">🚗 Ich war Fahrer</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="noLunchBreak" />
+                    <label for="noLunchBreak">⏸️ Keine Mittagspause</label>
+                </div>
+
+                <div style="border-top: 1px solid #e0e0e0; margin: 20px 0; padding-top: 20px;">
+                    <label style="margin-bottom: 10px; display: block; font-weight: 600; color: #555;">📋 Abwesenheit (automatisch 9,75h):</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="isUrlaub" onchange="handleAbsenceCheckbox('Urlaub')" />
+                        <label for="isUrlaub">🏖️ Urlaub</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="isFeiertag" onchange="handleAbsenceCheckbox('Feiertag')" />
+                        <label for="isFeiertag">🎉 Feiertag</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="isKrank" onchange="handleAbsenceCheckbox('Krank')" />
+                        <label for="isKrank">🤒 Krank</label>
+                    </div>
+                </div>
+
+                <div id="baustellenContainer">
+                    <div class="baustelle-entry" data-index="0">
+                        <label>🏗️ Baustelle</label>
+                        <input type="text" class="baustelle-name" list="baustellenList" placeholder="Baustelle auswählen oder eingeben" />
+                        <datalist id="baustellenList"></datalist>
+                        
+                        <div class="time-row">
+                            <div>
+                                <label>Von</label>
+                                <input type="time" class="time-from" step="900" />
+                            </div>
+                            <div>
+                                <label>Bis</label>
+                                <input type="time" class="time-to" step="900" />
+                            </div>
+                            <div>
+                                <label>Pause (h)</label>
+                                <input type="number" class="pause-hours" step="0.25" value="0" min="0" placeholder="0" />
+                            </div>
+                            <div>
+                                <label>Stunden</label>
+                                <input type="number" class="hours-total" step="0.25" placeholder="Auto/Manuell" />
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #999; margin-top: 5px;">
+                            💡 Tipp: Entweder Uhrzeit eingeben (Auto-Berechnung) oder Stunden manuell eintragen
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn add-more-btn" onclick="addBaustelleEntry()">+ Weitere Baustelle hinzufügen</button>
+
+                <button class="btn" onclick="saveEntry()">💾 Eintrag speichern</button>
+                <button class="btn btn-secondary" onclick="requestNotificationPermission()">🔔 Benachrichtigungen aktivieren</button>
+            </div>
+        </div>
+
+        <!-- Übersicht Tab -->
+        <div id="overviewTab" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">Übersicht</h2>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="switchView('calendar')">📅 Kalender</button>
+                        <button class="view-btn" onclick="switchView('list')">📋 Liste</button>
+                    </div>
+                </div>
+                
+                <!-- Kalender-Ansicht -->
+                <div id="calendarView" class="calendar-view">
+                    <div class="calendar-controls">
+                        <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">◀</button>
+                        <h3 id="calendarTitle" style="margin: 0;"></h3>
+                        <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">▶</button>
+                    </div>
+                    <div id="calendarGrid" class="calendar-grid"></div>
+                    <div class="calendar-legend">
+                        <div><span class="legend-dot" style="background: #4facfe;"></span> Mit Einträgen</div>
+                        <div><span class="legend-dot" style="background: #f5f5f5;"></span> Ohne Einträge</div>
+                    </div>
+                </div>
+                
+                <!-- Listen-Ansicht -->
+                <div id="listView" class="list-view" style="display: none;">
+                    <div class="month-selector">
+                        <select id="monthFilter">
+                            <option value="">Alle Monate</option>
+                        </select>
+                        <select id="yearFilter">
+                            <option value="">Alle Jahre</option>
+                        </select>
+                    </div>
+                    <div id="entriesList" class="entries-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Tab -->
+        <div id="exportTab" class="tab-content">
+            <div class="card">
+                <h2 style="margin-bottom: 20px;">Export</h2>
+                
+                <div class="form-group">
+                    <label>📆 Monat auswählen</label>
+                    <select id="exportMonth">
+                        <option value="">Monat wählen...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>📅 Jahr auswählen</label>
+                    <select id="exportYear">
+                        <option value="">Jahr wählen...</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-success" onclick="exportToExcel()">📊 Als Excel exportieren (.xlsx)</button>
+                <button class="btn" onclick="exportToPDF()">📄 Als PDF exportieren</button>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-bottom: 20px;">🔄 Backup & Sync</h2>
+                <p style="margin-bottom: 15px; color: #666; font-size: 14px;">
+                    Nutze Backup, um deine Daten manuell zwischen Geräten zu übertragen oder als Sicherung.
+                </p>
+                
+                <button class="btn btn-secondary" onclick="exportBackup()">💾 Backup erstellen (.json)</button>
+                <button class="btn" onclick="document.getElementById('importFile').click()">📥 Backup importieren</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)" />
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        // Daten-Management mit Cloud-Sync
+        let entries = [];
+        let recentBaustellen = [];
+        let syncEnabled = false;
+
+        // Initialisiere Storage (versuche Cloud-Sync, fallback zu localStorage)
+        async function initStorage() {
+            // Prüfe ob Browser-Sync verfügbar ist
+            if ('storage' in navigator && 'sync' in navigator.storage) {
+                try {
+                    // Nutze IndexedDB für bessere Sync-Unterstützung
+                    const db = await openDatabase();
+                    const data = await loadFromIndexedDB(db);
+                    entries = data.entries || [];
+                    recentBaustellen = data.baustellen || [];
+                    syncEnabled = true;
+                    updateSyncStatus(true);
+                    return;
+                } catch (e) {
+                    console.log('Cloud-Sync nicht verfügbar, nutze localStorage');
+                }
+            }
+            
+            // Fallback zu localStorage
+            entries = JSON.parse(localStorage.getItem('stundenzettel_entries') || '[]');
+            recentBaustellen = JSON.parse(localStorage.getItem('recent_baustellen') || '[]');
+            syncEnabled = false;
+            updateSyncStatus(false);
+        }
+
+        // IndexedDB für Cloud-Sync
+        function openDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('StundenzettelDB', 1);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('data')) {
+                        db.createObjectStore('data');
+                    }
+                };
+            });
+        }
+
+        async function loadFromIndexedDB(db) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['data'], 'readonly');
+                const store = transaction.objectStore('data');
+                const request = store.get('stundenzettel_data');
+                
+                request.onsuccess = () => {
+                    resolve(request.result || { entries: [], baustellen: [] });
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function saveToIndexedDB(data) {
+            try {
+                const db = await openDatabase();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(['data'], 'readwrite');
+                    const store = transaction.objectStore('data');
+                    const request = store.put(data, 'stundenzettel_data');
+                    
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            } catch (e) {
+                console.error('IndexedDB save failed:', e);
+            }
+        }
+
+        // Speicher-Funktion die beide Methoden nutzt
+        async function saveData() {
+            const data = {
+                entries: entries,
+                baustellen: recentBaustellen,
+                lastSync: new Date().toISOString()
+            };
+            
+            // Speichere in IndexedDB (für Cloud-Sync)
+            if (syncEnabled) {
+                await saveToIndexedDB(data);
+            }
+            
+            // Speichere auch in localStorage (als Backup)
+            localStorage.setItem('stundenzettel_entries', JSON.stringify(entries));
+            localStorage.setItem('recent_baustellen', JSON.stringify(recentBaustellen));
+            localStorage.setItem('last_sync', data.lastSync);
+            
+            updateSyncStatus(syncEnabled);
+        }
+
+        function updateSyncStatus(enabled) {
+            const lastSync = localStorage.getItem('last_sync');
+            const syncInfo = document.getElementById('syncInfo');
+            
+            if (!syncInfo) return;
+            
+            if (enabled && lastSync) {
+                const date = new Date(lastSync);
+                const timeStr = date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                syncInfo.innerHTML = `☁️ Cloud-Sync aktiv • Zuletzt: ${timeStr}`;
+                syncInfo.className = 'sync-status sync-enabled';
+            } else if (!enabled) {
+                syncInfo.innerHTML = '💾 Nur lokal gespeichert • Cloud-Sync nicht verfügbar';
+                syncInfo.className = 'sync-status sync-local';
+            }
+        }
+
+        // Initialisierung
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initStorage();
+            const dateInput = document.getElementById('entryDate');
+            dateInput.valueAsDate = new Date();
+            dateInput.addEventListener('change', updateTotalHoursDisplay);
+            
+            // Abwesenheit Checkboxes
+            ['isUrlaub', 'isFeiertag', 'isKrank'].forEach(id => {
+                const checkbox = document.getElementById(id);
+                if (checkbox) {
+                    checkbox.addEventListener('change', updateTotalHoursDisplay);
+                }
+            });
+            
+            updateBaustellenList();
+            updateEntriesList();
+            updateMonthYearFilters();
+            updateExportSelectors();
+            checkNotificationStatus();
+            setupTimeCalculation();
+            updateTotalHoursDisplay();
+            
+            // Notification-Check bei jedem Laden
+            if ('Notification' in window && Notification.permission === 'granted') {
+                scheduleNotification();
+            }
+        });
+
+        // Tab-Wechsel
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+            
+            if (tab === 'overview') {
+                updateCalendarView();
+                updateEntriesList();
+            }
+        }
+
+        // Kalender-Ansicht State
+        let currentCalendarMonth = new Date().getMonth();
+        let currentCalendarYear = new Date().getFullYear();
+
+        function switchView(view) {
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (view === 'calendar') {
+                document.getElementById('calendarView').style.display = 'block';
+                document.getElementById('listView').style.display = 'none';
+                updateCalendarView();
+            } else {
+                document.getElementById('calendarView').style.display = 'none';
+                document.getElementById('listView').style.display = 'block';
+                updateEntriesList();
+            }
+        }
+
+        function changeCalendarMonth(delta) {
+            currentCalendarMonth += delta;
+            if (currentCalendarMonth > 11) {
+                currentCalendarMonth = 0;
+                currentCalendarYear++;
+            } else if (currentCalendarMonth < 0) {
+                currentCalendarMonth = 11;
+                currentCalendarYear--;
+            }
+            updateCalendarView();
+        }
+
+        function updateCalendarView() {
+            const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 
+                              'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+            
+            document.getElementById('calendarTitle').textContent = 
+                `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
+            
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            // Wochentag-Header
+            const weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+            weekdays.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-day-header';
+                header.textContent = day;
+                grid.appendChild(header);
+            });
+            
+            // Erstelle Map für Einträge
+            const entriesMap = {};
+            entries.forEach(entry => {
+                const date = new Date(entry.date);
+                if (date.getMonth() === currentCalendarMonth && date.getFullYear() === currentCalendarYear) {
+                    const totalHours = entry.baustellen.reduce((sum, b) => sum + b.hours, 0);
+                    entriesMap[date.getDate()] = totalHours;
+                }
+            });
+            
+            // Erster Tag des Monats
+            const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
+            let firstWeekday = firstDay.getDay();
+            firstWeekday = firstWeekday === 0 ? 7 : firstWeekday; // Sonntag = 7
+            
+            // Letzer Tag des Monats
+            const daysInMonth = new Date(currentCalendarYear, currentCalendarMonth + 1, 0).getDate();
+            
+            // Tage vom vorherigen Monat
+            for (let i = 1; i < firstWeekday; i++) {
+                const day = document.createElement('div');
+                day.className = 'calendar-day other-month';
+                grid.appendChild(day);
+            }
+            
+            // Tage des aktuellen Monats
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                
+                if (entriesMap[day]) {
+                    dayEl.classList.add('has-entry');
+                    dayEl.innerHTML = `
+                        <div class="calendar-day-number">${day}</div>
+                        <div class="calendar-day-hours">${entriesMap[day].toFixed(1)}h</div>
+                    `;
+                } else {
+                    dayEl.innerHTML = `<div class="calendar-day-number">${day}</div>`;
+                }
+                
+                const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                dayEl.onclick = () => {
+                    const entry = entries.find(e => e.date === dateStr);
+                    if (entry) {
+                        editEntry(dateStr);
+                    } else {
+                        // Erstelle neuen Eintrag für diesen Tag
+                        document.getElementById('entryDate').value = dateStr;
+                        switchTab('entry');
+                        document.querySelector('.nav-tab:first-child').click();
+                    }
+                };
+                
+                grid.appendChild(dayEl);
+            }
+        }
+
+        // Abwesenheit-Checkbox Handler
+        function handleAbsenceCheckbox(type) {
+            // Nur eine Checkbox gleichzeitig
+            const checkboxes = ['isUrlaub', 'isFeiertag', 'isKrank'];
+            checkboxes.forEach(id => {
+                if (id !== 'is' + type) {
+                    document.getElementById(id).checked = false;
+                }
+            });
+            
+            const isChecked = document.getElementById('is' + type).checked;
+            
+            if (isChecked) {
+                // Setze erste Baustelle auf den Typ und 9,75h
+                const firstEntry = document.querySelector('.baustelle-entry');
+                if (firstEntry) {
+                    firstEntry.querySelector('.baustelle-name').value = type;
+                    firstEntry.querySelector('.hours-total').value = '9.75';
+                    firstEntry.querySelector('.hours-total').dataset.manual = 'true';
+                    firstEntry.querySelector('.time-from').value = '';
+                    firstEntry.querySelector('.time-to').value = '';
+                    firstEntry.querySelector('.pause-hours').value = '0';
+                }
+                updateTotalHoursDisplay();
+            }
+        }
+
+        // Baustelle hinzufügen
+        function addBaustelleEntry() {
+            const container = document.getElementById('baustellenContainer');
+            const index = container.children.length;
+            const lastEntry = container.querySelector('.baustelle-entry:last-child');
+            const lastTimeTo = lastEntry.querySelector('.time-to').value;
+            
+            const newEntry = document.createElement('div');
+            newEntry.className = 'baustelle-entry';
+            newEntry.dataset.index = index;
+            newEntry.innerHTML = `
+                <label>🏗️ Baustelle</label>
+                <input type="text" class="baustelle-name" list="baustellenList" placeholder="Baustelle auswählen oder eingeben" />
+                
+                <div class="time-row">
+                    <div>
+                        <label>Von</label>
+                        <input type="time" class="time-from" value="${lastTimeTo || ''}" step="900" />
+                    </div>
+                    <div>
+                        <label>Bis</label>
+                        <input type="time" class="time-to" step="900" />
+                    </div>
+                    <div>
+                        <label>Pause (h)</label>
+                        <input type="number" class="pause-hours" step="0.25" value="0" min="0" placeholder="0" />
+                    </div>
+                    <div>
+                        <label>Stunden</label>
+                        <input type="number" class="hours-total" step="0.25" placeholder="Auto/Manuell" />
+                    </div>
+                </div>
+                <div style="font-size: 12px; color: #999; margin-top: 5px;">
+                    💡 Tipp: Entweder Uhrzeit eingeben (Auto-Berechnung) oder Stunden manuell eintragen
+                </div>
+                <button class="remove-btn" onclick="removeBaustelleEntry(${index})">🗑️ Entfernen</button>
+            `;
+            
+            container.appendChild(newEntry);
+            setupTimeCalculation();
+        }
+
+        function removeBaustelleEntry(index) {
+            const entry = document.querySelector(`.baustelle-entry[data-index="${index}"]`);
+            if (entry && document.querySelectorAll('.baustelle-entry').length > 1) {
+                entry.remove();
+                updateTotalHoursDisplay();
+            }
+        }
+
+        // Automatische Stunden-Berechnung mit Pause
+        function setupTimeCalculation() {
+            document.querySelectorAll('.baustelle-entry').forEach(entry => {
+                const fromInput = entry.querySelector('.time-from');
+                const toInput = entry.querySelector('.time-to');
+                const pauseInput = entry.querySelector('.pause-hours');
+                const hoursInput = entry.querySelector('.hours-total');
+                
+                const calculate = () => {
+                    // Nur berechnen wenn beide Zeiten ausgefüllt sind UND Stunden-Feld leer/auto ist
+                    if (fromInput.value && toInput.value) {
+                        const from = fromInput.value.split(':');
+                        const to = toInput.value.split(':');
+                        const fromMinutes = parseInt(from[0]) * 60 + parseInt(from[1]);
+                        const toMinutes = parseInt(to[0]) * 60 + parseInt(to[1]);
+                        const diffMinutes = toMinutes - fromMinutes;
+                        const grossHours = diffMinutes / 60;
+                        const pause = parseFloat(pauseInput.value) || 0;
+                        const netHours = Math.max(0, grossHours - pause);
+                        
+                        // Setze nur wenn Stunden-Feld leer ist oder einen berechneten Wert hat
+                        if (!hoursInput.dataset.manual) {
+                            hoursInput.value = netHours > 0 ? netHours.toFixed(2) : '';
+                        }
+                    }
+                    
+                    // Update total display
+                    updateTotalHoursDisplay();
+                };
+                
+                // Markiere manuelle Eingabe
+                hoursInput.addEventListener('input', () => {
+                    if (hoursInput.value && (!fromInput.value || !toInput.value)) {
+                        hoursInput.dataset.manual = 'true';
+                    } else {
+                        delete hoursInput.dataset.manual;
+                    }
+                    updateTotalHoursDisplay();
+                });
+                
+                // Bei Zeitänderung: Lösche manuelle Markierung und berechne neu
+                fromInput.addEventListener('change', () => {
+                    delete hoursInput.dataset.manual;
+                    calculate();
+                });
+                toInput.addEventListener('change', () => {
+                    delete hoursInput.dataset.manual;
+                    calculate();
+                });
+                pauseInput.addEventListener('input', calculate);
+                
+                // Initiale Berechnung
+                calculate();
+            });
+        }
+
+        // Live-Anzeige der Gesamtstunden
+        function updateTotalHoursDisplay() {
+            let total = 0;
+            document.querySelectorAll('.baustelle-entry').forEach(entry => {
+                const hours = parseFloat(entry.querySelector('.hours-total').value) || 0;
+                total += hours;
+            });
+            
+            const display = document.getElementById('totalHoursDisplay');
+            const valueEl = document.getElementById('totalHoursValue');
+            const statusEl = document.getElementById('totalHoursStatus');
+            
+            if (!display || !valueEl || !statusEl) return;
+            
+            valueEl.textContent = total.toFixed(2) + ' h';
+            
+            // Check if it's a regular workday (Mo-Do)
+            const date = document.getElementById('entryDate').value;
+            let isRegularWorkday = true;
+            if (date) {
+                const selectedDate = new Date(date);
+                const dayOfWeek = selectedDate.getDay();
+                isRegularWorkday = dayOfWeek >= 1 && dayOfWeek <= 4; // Mo-Do
+            }
+            
+            // Check Urlaub/Feiertag/Krank
+            const isUrlaub = document.getElementById('isUrlaub')?.checked || false;
+            const isFeiertag = document.getElementById('isFeiertag')?.checked || false;
+            const isKrank = document.getElementById('isKrank')?.checked || false;
+            const isAbsenceDay = isUrlaub || isFeiertag || isKrank;
+            const expectedHours = isAbsenceDay ? 9.75 : 9.25;
+            
+            let dayTypeText = 'Arbeitstag';
+            if (isUrlaub) dayTypeText = 'Urlaub';
+            else if (isFeiertag) dayTypeText = 'Feiertag';
+            else if (isKrank) dayTypeText = 'Krank';
+            
+            // Status & Color
+            if (total === 0) {
+                display.className = 'total-hours-display';
+                statusEl.textContent = '';
+            } else if (isRegularWorkday && total < expectedHours) {
+                display.className = 'total-hours-display warning';
+                statusEl.textContent = `⚠️ Unter ${expectedHours.toFixed(2)}h (${dayTypeText}) - Baustelle vergessen?`;
+            } else if (total >= expectedHours) {
+                display.className = 'total-hours-display success';
+                statusEl.textContent = `✅ Vollständiger ${dayTypeText}`;
+            } else {
+                // Weekend or Friday (overtime day)
+                display.className = 'total-hours-display';
+                statusEl.textContent = total > 0 ? '📊 Erfasst' : '';
+            }
+        }
+
+        // Eintrag speichern
+        async function saveEntry() {
+            const date = document.getElementById('entryDate').value;
+            if (!date) {
+                alert('Bitte Datum auswählen!');
+                return;
+            }
+
+            const wasDriver = document.getElementById('wasDriver').checked;
+            const noLunchBreak = document.getElementById('noLunchBreak').checked;
+            const isUrlaub = document.getElementById('isUrlaub').checked;
+            const isFeiertag = document.getElementById('isFeiertag').checked;
+            const isKrank = document.getElementById('isKrank').checked;
+            
+            const baustellen = [];
+            document.querySelectorAll('.baustelle-entry').forEach(entry => {
+                const name = entry.querySelector('.baustelle-name').value.trim();
+                const hours = parseFloat(entry.querySelector('.hours-total').value);
+                
+                if (name && hours > 0) {
+                    baustellen.push({ name, hours });
+                    
+                    // Baustelle zu Recent hinzufügen (aber nicht Urlaub/Feiertag/Krank)
+                    if (!recentBaustellen.includes(name) && name !== 'Urlaub' && name !== 'Feiertag' && name !== 'Krank') {
+                        recentBaustellen.unshift(name);
+                        if (recentBaustellen.length > 20) {
+                            recentBaustellen = recentBaustellen.slice(0, 20);
+                        }
+                    }
+                }
+            });
+
+            if (baustellen.length === 0) {
+                alert('Bitte mindestens eine Baustelle mit Stunden eingeben!');
+                return;
+            }
+
+            // Stunden-Validierung (nur Mo-Do, Freitag ist Überstunden-Tag)
+            const totalHours = baustellen.reduce((sum, b) => sum + b.hours, 0);
+            const selectedDate = new Date(date);
+            const dayOfWeek = selectedDate.getDay(); // 0 = Sonntag, 6 = Samstag
+            const isRegularWorkday = dayOfWeek >= 1 && dayOfWeek <= 4; // Mo-Do (4-Tage-Woche)
+            
+            // Unterschiedliche Sollstunden je nach Tag-Typ
+            const isAbsenceDay = isUrlaub || isFeiertag || isKrank;
+            const expectedHours = isAbsenceDay ? 9.75 : 9.25;
+            const dayType = isAbsenceDay ? 'Abwesenheits-Tag' : 'normalen Arbeitstag (Mo-Do)';
+            
+            // Warnung nur an regulären Arbeitstagen (Mo-Do) und wenn unter Sollstunden
+            if (isRegularWorkday && totalHours < expectedHours) {
+                const confirmMsg = `⚠️ Achtung: Tages-Summe nur ${totalHours.toFixed(2)} Stunden!\n\n` +
+                                  `An einem ${dayType} sollten es ${expectedHours.toFixed(2)} Stunden sein.\n\n` +
+                                  `Hast du vielleicht eine Baustelle vergessen?\n\n` +
+                                  `Trotzdem speichern?`;
+                
+                if (!confirm(confirmMsg)) {
+                    return; // Abbrechen wenn Nutzer "Nein" klickt
+                }
+            }
+
+            const entry = {
+                date,
+                baustellen,
+                wasDriver,
+                noLunchBreak,
+                isUrlaub,
+                isFeiertag,
+                isKrank,
+                timestamp: new Date().toISOString()
+            };
+
+            // Überschreibe existierenden Eintrag für dieses Datum
+            entries = entries.filter(e => e.date !== date);
+            entries.push(entry);
+            entries.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            await saveData();
+
+            alert('✅ Eintrag gespeichert!');
+            resetForm();
+            updateBaustellenList();
+            updateEntriesList();
+            updateExportSelectors();
+        }
+
+        function resetForm() {
+            document.getElementById('entryDate').valueAsDate = new Date();
+            document.getElementById('wasDriver').checked = false;
+            document.getElementById('noLunchBreak').checked = false;
+            document.getElementById('isUrlaub').checked = false;
+            document.getElementById('isFeiertag').checked = false;
+            document.getElementById('isKrank').checked = false;
+            
+            const container = document.getElementById('baustellenContainer');
+            container.innerHTML = `
+                <div class="baustelle-entry" data-index="0">
+                    <label>🏗️ Baustelle</label>
+                    <input type="text" class="baustelle-name" list="baustellenList" placeholder="Baustelle auswählen oder eingeben" />
+                    <datalist id="baustellenList"></datalist>
+                    
+                    <div class="time-row">
+                        <div>
+                            <label>Von</label>
+                            <input type="time" class="time-from" step="900" />
+                        </div>
+                        <div>
+                            <label>Bis</label>
+                            <input type="time" class="time-to" step="900" />
+                        </div>
+                        <div>
+                            <label>Pause (h)</label>
+                            <input type="number" class="pause-hours" step="0.25" value="0" min="0" placeholder="0" />
+                        </div>
+                        <div>
+                            <label>Stunden</label>
+                            <input type="number" class="hours-total" step="0.25" placeholder="Auto/Manuell" />
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #999; margin-top: 5px;">
+                        💡 Tipp: Entweder Uhrzeit eingeben (Auto-Berechnung) oder Stunden manuell eintragen
+                    </div>
+                </div>
+            `;
+            updateBaustellenList();
+            setupTimeCalculation();
+        }
+
+        // Baustellen-Liste aktualisieren
+        function updateBaustellenList() {
+            const datalist = document.getElementById('baustellenList');
+            datalist.innerHTML = recentBaustellen.map(b => `<option value="${b}">`).join('');
+        }
+
+        // Einträge-Liste aktualisieren
+        function updateEntriesList() {
+            const list = document.getElementById('entriesList');
+            const monthFilter = document.getElementById('monthFilter').value;
+            const yearFilter = document.getElementById('yearFilter').value;
+            
+            let filtered = entries;
+            
+            if (monthFilter) {
+                filtered = filtered.filter(e => {
+                    const date = new Date(e.date);
+                    return date.getMonth() === parseInt(monthFilter);
+                });
+            }
+            
+            if (yearFilter) {
+                filtered = filtered.filter(e => {
+                    const date = new Date(e.date);
+                    return date.getFullYear() === parseInt(yearFilter);
+                });
+            }
+            
+            if (filtered.length === 0) {
+                list.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">Keine Einträge vorhanden</p>';
+                return;
+            }
+            
+            list.innerHTML = filtered.reverse().map(entry => {
+                const date = new Date(entry.date);
+                const dateStr = date.toLocaleDateString('de-DE', { 
+                    weekday: 'short', 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric' 
+                });
+                
+                const totalHours = entry.baustellen.reduce((sum, b) => sum + b.hours, 0).toFixed(2);
+                
+                return `
+                    <div class="entry-item">
+                        <div>
+                            <div class="entry-date">${dateStr}</div>
+                            <div class="entry-details">
+                                ${entry.baustellen.map(b => `${b.name} (${b.hours.toFixed(2)}h)`).join(' • ')}
+                                <br>Gesamt: ${totalHours} Stunden
+                                ${entry.wasDriver ? '<span class="badge badge-driver">Fahrer</span>' : ''}
+                                ${entry.noLunchBreak ? '<span class="badge badge-no-break">Keine Pause</span>' : ''}
+                                ${entry.isUrlaub ? '<span class="badge badge-urlaub">Urlaub</span>' : ''}
+                                ${entry.isFeiertag ? '<span class="badge badge-feiertag">Feiertag</span>' : ''}
+                                ${entry.isKrank ? '<span class="badge badge-krank">Krank</span>' : ''}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button class="edit-entry" onclick="editEntry('${entry.date}')">✏️</button>
+                            <button class="delete-entry" onclick="deleteEntry('${entry.date}')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteEntry(date) {
+            if (confirm('Eintrag wirklich löschen?')) {
+                entries = entries.filter(e => e.date !== date);
+                await saveData();
+                updateEntriesList();
+                updateExportSelectors();
+            }
+        }
+
+        function editEntry(date) {
+            const entry = entries.find(e => e.date === date);
+            if (!entry) return;
+            
+            // Wechsle zum Eintrag-Tab
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector('.nav-tab:first-child').classList.add('active');
+            document.getElementById('entryTab').classList.add('active');
+            
+            // Scrolle nach oben
+            window.scrollTo(0, 0);
+            
+            // Lade Daten ins Formular
+            document.getElementById('entryDate').value = date;
+            document.getElementById('wasDriver').checked = entry.wasDriver || false;
+            document.getElementById('noLunchBreak').checked = entry.noLunchBreak || false;
+            document.getElementById('isUrlaub').checked = entry.isUrlaub || false;
+            document.getElementById('isFeiertag').checked = entry.isFeiertag || false;
+            document.getElementById('isKrank').checked = entry.isKrank || false;
+            
+            // Lösche bestehende Baustellen-Einträge
+            const container = document.getElementById('baustellenContainer');
+            container.innerHTML = '';
+            
+            // Erstelle Baustellen-Einträge
+            entry.baustellen.forEach((baustelle, index) => {
+                const baustelleEntry = document.createElement('div');
+                baustelleEntry.className = 'baustelle-entry';
+                baustelleEntry.dataset.index = index;
+                baustelleEntry.innerHTML = `
+                    <label>🏗️ Baustelle</label>
+                    <input type="text" class="baustelle-name" list="baustellenList" value="${baustelle.name}" placeholder="Baustelle auswählen oder eingeben" />
+                    
+                    <div class="time-row">
+                        <div>
+                            <label>Von</label>
+                            <input type="time" class="time-from" step="900" />
+                        </div>
+                        <div>
+                            <label>Bis</label>
+                            <input type="time" class="time-to" step="900" />
+                        </div>
+                        <div>
+                            <label>Pause (h)</label>
+                            <input type="number" class="pause-hours" step="0.25" value="0" min="0" placeholder="0" />
+                        </div>
+                        <div>
+                            <label>Stunden</label>
+                            <input type="number" class="hours-total" step="0.25" value="${baustelle.hours.toFixed(2)}" placeholder="Auto/Manuell" />
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #999; margin-top: 5px;">
+                        💡 Tipp: Entweder Uhrzeit eingeben (Auto-Berechnung) oder Stunden manuell eintragen
+                    </div>
+                    ${index > 0 ? `<button class="remove-btn" onclick="removeBaustelleEntry(${index})">🗑️ Entfernen</button>` : ''}
+                `;
+                container.appendChild(baustelleEntry);
+            });
+            
+            // Setup Event-Listener
+            setupTimeCalculation();
+            updateTotalHoursDisplay();
+            
+            // Zeige Hinweis
+            alert('✏️ Eintrag geladen! Nimm deine Änderungen vor und klicke auf "Speichern".');
+        }
+
+        // Filter aktualisieren
+        function updateMonthYearFilters() {
+            const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 
+                          'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+            
+            const monthFilter = document.getElementById('monthFilter');
+            monthFilter.innerHTML = '<option value="">Alle Monate</option>' +
+                months.map((m, i) => `<option value="${i}">${m}</option>`).join('');
+            
+            const years = [...new Set(entries.map(e => new Date(e.date).getFullYear()))].sort();
+            const yearFilter = document.getElementById('yearFilter');
+            yearFilter.innerHTML = '<option value="">Alle Jahre</option>' +
+                years.map(y => `<option value="${y}">${y}</option>`).join('');
+            
+            monthFilter.addEventListener('change', updateEntriesList);
+            yearFilter.addEventListener('change', updateEntriesList);
+        }
+
+        // Export-Selektoren aktualisieren
+        function updateExportSelectors() {
+            const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 
+                          'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+            
+            const years = [...new Set(entries.map(e => new Date(e.date).getFullYear()))].sort().reverse();
+            
+            const exportMonth = document.getElementById('exportMonth');
+            const exportYear = document.getElementById('exportYear');
+            
+            exportMonth.innerHTML = '<option value="">Monat wählen...</option>' +
+                months.map((m, i) => `<option value="${i}">${m}</option>`).join('');
+            
+            exportYear.innerHTML = '<option value="">Jahr wählen...</option>' +
+                years.map(y => `<option value="${y}">${y}</option>`).join('');
+            
+            // Aktuellen Monat vorauswählen
+            const now = new Date();
+            exportMonth.value = now.getMonth();
+            exportYear.value = now.getFullYear();
+        }
+
+        // Excel Export
+        function exportToExcel() {
+            const month = parseInt(document.getElementById('exportMonth').value);
+            const year = parseInt(document.getElementById('exportYear').value);
+            
+            if (isNaN(month) || isNaN(year)) {
+                alert('Bitte Monat und Jahr auswählen!');
+                return;
+            }
+            
+            const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 
+                              'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+            
+            const filtered = entries.filter(e => {
+                const date = new Date(e.date);
+                return date.getMonth() === month && date.getFullYear() === year;
+            });
+            
+            // Erstelle Map für schnellen Zugriff auf Einträge nach Datum
+            const entriesMap = {};
+            filtered.forEach(entry => {
+                entriesMap[entry.date] = entry;
+            });
+            
+            // Excel-Daten erstellen
+            const data = [
+                [`Stunden ${monthNames[month]} ${year}`],
+                ['Dominik Assemann'],
+                [],
+                ['Datum', 'Baustelle', 'Stunden', '']
+            ];
+            
+            // Berechne Anzahl der Tage im Monat
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let totalHours = 0;
+            
+            // Array um Zeilen-Infos zu speichern (für späteres Styling)
+            const rowStyles = [];
+            
+            // Gehe durch alle Tage des Monats
+            for (let day = 1; day <= daysInMonth; day++) {
+                const currentDate = new Date(year, month, day);
+                const dateStr = `${String(day).padStart(2, '0')}.${String(month + 1).padStart(2, '0')}.${year}`;
+                const isoDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayOfWeek = currentDate.getDay(); // 0=Sonntag, 6=Samstag
+                
+                const entry = entriesMap[isoDate];
+                
+                if (entry) {
+                    // Tag mit Einträgen
+                    let extras = [];
+                    if (entry.wasDriver) extras.push('Fahrer');
+                    if (entry.noLunchBreak) extras.push('Keine Pause');
+                    const extraStr = extras.join(', ');
+                    
+                    entry.baustellen.forEach((b, i) => {
+                        if (i === 0) {
+                            data.push([dateStr, b.name, b.hours.toFixed(2), extraStr]);
+                            rowStyles.push(dayOfWeek); // Speichere Wochentag
+                        } else {
+                            data.push(['', b.name, b.hours.toFixed(2), '']);
+                            rowStyles.push(-1); // Keine Farbe für Fortsetzungszeilen
+                        }
+                        totalHours += b.hours;
+                    });
+                } else {
+                    // Tag ohne Eintrag - leere Zeile
+                    data.push([dateStr, '', '', '']);
+                    rowStyles.push(dayOfWeek); // Speichere Wochentag
+                }
+            }
+            
+            // Gesamtsumme
+            data.push([]);
+            rowStyles.push(-1);
+            data.push(['Gesamt:', '', totalHours.toFixed(2), '']);
+            rowStyles.push(-1);
+            
+            // Workbook erstellen
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // Spaltenbreiten
+            ws['!cols'] = [
+                { wch: 12 },
+                { wch: 35 },
+                { wch: 10 },
+                { wch: 15 }
+            ];
+            
+            // Farben definieren (wie in Vorlage)
+            const weekendFill = { fgColor: { rgb: "FDE9D9" } }; // Helles Orange für Sa/So
+            const fridayFill = { fgColor: { rgb: "D9D9D9" } };   // Helles Grau für Fr
+            const normalFill = { fgColor: { rgb: "FFFFFF" } };    // Weiß für Mo-Do
+            
+            // Style für alle Datenzeilen (ab Zeile 5 = Index 4)
+            const startRow = 4; // Header ist in Zeile 4 (0-basiert)
+            
+            for (let i = 0; i < rowStyles.length - 2; i++) { // -2 wegen Leerzeile und Gesamt
+                const rowIndex = startRow + i;
+                const dayOfWeek = rowStyles[i];
+                
+                let fillStyle;
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    // Sonntag (0) oder Samstag (6) = Orange
+                    fillStyle = weekendFill;
+                } else if (dayOfWeek === 5) {
+                    // Freitag (5) = Grau
+                    fillStyle = fridayFill;
+                } else if (dayOfWeek >= 1 && dayOfWeek <= 4) {
+                    // Mo-Do (1-4) = Weiß
+                    fillStyle = normalFill;
+                } else {
+                    // Fortsetzungszeilen = keine spezielle Farbe
+                    continue;
+                }
+                
+                // Wende Farbe NUR auf die Datums-Spalte (Spalte 0) an
+                const cellAddress = XLSX.utils.encode_cell({ r: rowIndex, c: 0 });
+                if (ws[cellAddress]) {
+                    ws[cellAddress].s = {
+                        fill: fillStyle,
+                        border: {
+                            top: { style: 'thin', color: { rgb: '000000' } },
+                            bottom: { style: 'thin', color: { rgb: '000000' } },
+                            left: { style: 'thin', color: { rgb: '000000' } },
+                            right: { style: 'thin', color: { rgb: '000000' } }
+                        }
+                    };
+                }
+            }
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Tabelle1');
+            XLSX.writeFile(wb, `Stundenzettel_${monthNames[month]}_${year}.xlsx`);
+        }
+
+        // PDF Export
+        function exportToPDF() {
+            const month = parseInt(document.getElementById('exportMonth').value);
+            const year = parseInt(document.getElementById('exportYear').value);
+            
+            if (isNaN(month) || isNaN(year)) {
+                alert('Bitte Monat und Jahr auswählen!');
+                return;
+            }
+            
+            const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 
+                              'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+            
+            const filtered = entries.filter(e => {
+                const date = new Date(e.date);
+                return date.getMonth() === month && date.getFullYear() === year;
+            });
+            
+            // Erstelle Map für schnellen Zugriff
+            const entriesMap = {};
+            filtered.forEach(entry => {
+                entriesMap[entry.date] = entry;
+            });
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Titel - genau wie im Original
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Stunden ${monthNames[month]} ${year}`, 14, 15);
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Dominik Assemann', 14, 22);
+            
+            // Tabelle - mit allen Tagen des Monats
+            const tableData = [];
+            const rowColors = []; // Speichere Wochentag für jede Zeile
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let totalHours = 0;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const currentDate = new Date(year, month, day);
+                const dateStr = `${String(day).padStart(2, '0')}.${String(month + 1).padStart(2, '0')}.${year}`;
+                const isoDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayOfWeek = currentDate.getDay(); // 0=Sonntag, 6=Samstag
+                
+                const entry = entriesMap[isoDate];
+                
+                if (entry) {
+                    // Tag mit Einträgen
+                    let extras = [];
+                    if (entry.wasDriver) extras.push('Fahrer');
+                    if (entry.noLunchBreak) extras.push('Keine Pause');
+                    const extraStr = extras.join(', ');
+                    
+                    entry.baustellen.forEach((b, i) => {
+                        if (i === 0) {
+                            tableData.push([dateStr, b.name, b.hours.toFixed(2), extraStr]);
+                            rowColors.push(dayOfWeek);
+                        } else {
+                            tableData.push(['', b.name, b.hours.toFixed(2), '']);
+                            rowColors.push(-1); // Fortsetzungszeile
+                        }
+                        totalHours += b.hours;
+                    });
+                } else {
+                    // Tag ohne Eintrag - leere Zeile
+                    tableData.push([dateStr, '', '', '']);
+                    rowColors.push(dayOfWeek);
+                }
+            }
+            
+            // Gesamtsumme
+            tableData.push(['', '', '', '']);
+            rowColors.push(-1);
+            tableData.push(['Gesamt:', '', totalHours.toFixed(2), '']);
+            rowColors.push(-1);
+            
+            // Tabelle mit Farb-Styling NUR für Datums-Spalte
+            doc.autoTable({
+                startY: 28,
+                head: [['Datum', 'Baustelle', 'Stunden', '']],
+                body: tableData,
+                theme: 'plain',
+                styles: { 
+                    fontSize: 10,
+                    cellPadding: 2,
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.1
+                },
+                headStyles: { 
+                    fillColor: [255, 255, 255],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    lineWidth: 0.1,
+                    lineColor: [0, 0, 0]
+                },
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 90 },
+                    2: { cellWidth: 20, halign: 'right' },
+                    3: { cellWidth: 45 }
+                },
+                didParseCell: function(data) {
+                    const rowIndex = data.row.index;
+                    const colIndex = data.column.index;
+                    
+                    // Gesamt-Zeile fett und weiß
+                    if (rowIndex === tableData.length - 1) {
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fillColor = [255, 255, 255];
+                        return;
+                    }
+                    
+                    // Farbe NUR für Datums-Spalte (Spalte 0)
+                    if (colIndex === 0) {
+                        const dayOfWeek = rowColors[rowIndex];
+                        
+                        if (dayOfWeek === 0 || dayOfWeek === 6) {
+                            // Sonntag (0) oder Samstag (6) = Orange
+                            data.cell.styles.fillColor = [253, 233, 217];
+                        } else if (dayOfWeek === 5) {
+                            // Freitag (5) = Grau
+                            data.cell.styles.fillColor = [217, 217, 217];
+                        } else if (dayOfWeek >= 1 && dayOfWeek <= 4) {
+                            // Mo-Do (1-4) = Weiß
+                            data.cell.styles.fillColor = [255, 255, 255];
+                        }
+                    } else {
+                        // Alle anderen Spalten bleiben weiß
+                        data.cell.styles.fillColor = [255, 255, 255];
+                    }
+                }
+            });
+            
+            doc.save(`Stundenzettel_${monthNames[month]}_${year}.pdf`);
+        }
+
+        // Benachrichtigungen
+        function checkNotificationStatus() {
+            const status = document.getElementById('notificationStatus');
+            
+            if (!('Notification' in window)) {
+                status.className = 'notification-status notification-disabled';
+                status.textContent = '❌ Benachrichtigungen werden von diesem Browser nicht unterstützt';
+                return;
+            }
+            
+            if (Notification.permission === 'granted') {
+                status.className = 'notification-status notification-enabled';
+                status.textContent = '✅ Benachrichtigungen aktiviert - Du wirst täglich um 16:35 erinnert';
+            } else if (Notification.permission === 'denied') {
+                status.className = 'notification-status notification-disabled';
+                status.textContent = '🚫 Benachrichtigungen blockiert - Bitte in den Browser-Einstellungen aktivieren';
+            } else {
+                status.className = 'notification-status notification-disabled';
+                status.textContent = '📱 Benachrichtigungen deaktiviert - Klicke unten auf "Benachrichtigungen aktivieren"';
+            }
+        }
+
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                alert('Dein Browser unterstützt keine Benachrichtigungen.');
+                return;
+            }
+            
+            Notification.requestPermission().then(permission => {
+                checkNotificationStatus();
+                if (permission === 'granted') {
+                    scheduleNotification();
+                    alert('✅ Benachrichtigungen aktiviert! Du erhältst täglich um 16:35 eine Erinnerung.');
+                }
+            });
+        }
+
+        function scheduleNotification() {
+            // Prüfe jeden Tag um 16:35, aber nur Mo-Do benachrichtigen
+            const checkAndNotify = () => {
+                const now = new Date();
+                const dayOfWeek = now.getDay(); // 0=Sonntag, 1=Montag, ..., 5=Freitag
+                
+                // Nur Mo-Do (1-4) benachrichtigen
+                if (dayOfWeek >= 1 && dayOfWeek <= 4) {
+                    showNotification();
+                }
+            };
+            
+            const now = new Date();
+            const target = new Date();
+            target.setHours(16, 35, 0, 0);
+            
+            if (now > target) {
+                target.setDate(target.getDate() + 1);
+            }
+            
+            const timeUntilNotification = target - now;
+            
+            setTimeout(() => {
+                checkAndNotify();
+                // Wiederhole täglich um 16:35, aber prüfe Wochentag
+                setInterval(checkAndNotify, 24 * 60 * 60 * 1000);
+            }, timeUntilNotification);
+        }
+
+        function showNotification() {
+            if (Notification.permission === 'granted') {
+                const notification = new Notification('⏱️ Stundenzettel-Erinnerung', {
+                    body: 'Zeit, deine Arbeitsstunden für heute einzutragen!',
+                    icon: '⏱️',
+                    badge: '⏱️',
+                    requireInteraction: true,
+                    tag: 'stundenzettel-daily'
+                });
+                
+                notification.onclick = function() {
+                    window.focus();
+                    this.close();
+                };
+            }
+        }
+
+        // Backup & Restore Funktionen
+        function exportBackup() {
+            const backup = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                entries: entries,
+                baustellen: recentBaustellen
+            };
+            
+            const dataStr = JSON.stringify(backup, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `stundenzettel_backup_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            alert('✅ Backup erstellt! Speichere die Datei in Google Drive oder OneDrive.');
+        }
+
+        async function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            try {
+                const text = await file.text();
+                const backup = JSON.parse(text);
+                
+                if (!backup.entries || !Array.isArray(backup.entries)) {
+                    alert('❌ Ungültige Backup-Datei!');
+                    return;
+                }
+                
+                const confirmMsg = `Backup vom ${new Date(backup.exportDate).toLocaleDateString('de-DE')}\n` +
+                                  `${backup.entries.length} Einträge gefunden.\n\n` +
+                                  `ACHTUNG: Bestehende Daten werden überschrieben!\n` +
+                                  `Möchtest du fortfahren?`;
+                
+                if (confirm(confirmMsg)) {
+                    entries = backup.entries;
+                    recentBaustellen = backup.baustellen || [];
+                    
+                    await saveData();
+                    
+                    updateBaustellenList();
+                    updateEntriesList();
+                    updateMonthYearFilters();
+                    updateExportSelectors();
+                    
+                    alert('✅ Backup erfolgreich importiert!');
+                }
+            } catch (e) {
+                alert('❌ Fehler beim Importieren: ' + e.message);
+            }
+            
+            event.target.value = '';
+        }
+    </script>
+</body>
+</html>

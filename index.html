@@ -8,6 +8,24 @@
     <meta name="apple-mobile-web-app-title" content="Stundenzettel">
     <title>Stundenzettel - Baustellenerfassung</title>
     <style>
+        :root {
+        --bg-card: white;
+        --text-primary: #333;
+        --input-bg: white;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg-card: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --input-bg: #2a2a2a;
+        }
+        
+        body { background: linear-gradient(135deg, #4a5fc1 0%, #5a3d7a 100%) !important; }
+        .card, .header { background: var(--bg-card) !important; color: var(--text-primary) !important; }
+        input, select, textarea { background: var(--input-bg) !important; color: var(--text-primary) !important; border-color: #404040 !important; }
+        .entry-item, .baustelle-entry { background: #2a2a2a !important; }
+    }
         * {
             margin: 0;
             padding: 0;
